@@ -5,7 +5,7 @@
 #define RQT_EXAMPLE_CPP_MY_PLUGIN_H
 
 #include <rqt_gui_cpp/plugin.h>
-#include <rqt_example_cpp/ui_my_plugin.h>
+#include <ui_my_plugin.h>
 #include <QWidget>
 
 namespace rqt_example_cpp
