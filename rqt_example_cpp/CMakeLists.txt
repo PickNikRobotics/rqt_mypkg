@@ -14,12 +14,11 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 
 find_package(ament_cmake REQUIRED)
-find_package(rqt_gui REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(rclcpp REQUIRED)
 find_package(Qt5Widgets REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(rqt_gui REQUIRED)
 find_package(rqt_gui_cpp REQUIRED)
-find_package(qt_gui_cpp REQUIRED)
 
 set(rqt_example_cpp_SRCS
   src/rqt_example_cpp/my_plugin.cpp)
@@ -32,13 +31,11 @@ set(rqt_example_cpp_UIS
 
 set(rqt_example_cpp_INCLUDE_DIRS
   include
-  ${ament_cmake_INCLUDE_DIRS}
   ${rqt_gui_INCLUDE_DIRS}
   ${std_msgs_INCLUDE_DIRS}
   ${rclcpp_INCLUDE_DIRS}
   ${Qt5Widgets_INCLUDE_DIRS}
   ${rqt_gui_cpp_INCLUDE_DIRS}
-  ${qt_gui_cpp_INCLUDE_DIRS}
   )
 
 qt5_wrap_cpp(rqt_example_cpp_MOCS ${rqt_example_cpp_HDRS})
@@ -47,7 +44,7 @@ qt5_wrap_ui(rqt_example_cpp_UIS_H ${rqt_example_cpp_UIS})
 
 include_directories(${rqt_example_cpp_INCLUDE_DIRS})
 
-add_library(${PROJECT_NAME}
+add_library(${PROJECT_NAME} SHARED
   ${rqt_example_cpp_SRCS}
   ${rqt_example_cpp_MOCS}
   ${rqt_example_cpp_UIS_H})
@@ -55,14 +52,26 @@ add_library(${PROJECT_NAME}
 
 target_link_libraries(
   ${PROJECT_NAME}
-  ${qt_gui_cpp_LIBRARIES}
+  ${rqt_gui_LIBRARIES}
   ${rqt_gui_cpp_LIBRARIES}
   Qt5::Widgets
-  ${ament_LIBRARIES}
+  ${QT_LIBRARIES}
+  ${QT_QTCORE_LIBRARY}
+  ${QT_QTGUI_LIBRARY}
+  ${rclcpp_LIBRARIES}
+  ${std_msgs_LIBRARIES}
 )
 
-install(FILES plugin.xml
-  DESTINATION share/${PROJECT_NAME}
+install(
+  TARGETS ${PROJECT_NAME}
+  EXPORT ${PROJECT_NAME}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include)
+
+install(PROGRAMS scripts/rqt_example_cpp
+  DESTINATION lib/${PROJECT_NAME}
 )
 
 install(
@@ -70,34 +79,12 @@ install(
   DESTINATION include
 )
 
-# set(LIBRARY_DIRS
-  # ${ament_cmake_LIBRARIES}
-  # ${rqt_gui_LIBRARIES}
-  # ${std_msgs_LIBRARIES} ${rclcpp_LIBRARIES} ${Qt5Widgets_LIBRARIES}
-  # ${rqt_gui_cpp_LIBRARIES}
-  # ${qt_gui_cpp_LIBRARIES})
-
-# set(LIBS
-  # ${ament_cmake_LIBRARIES}
-  # ${rqt_gui_LIBRARIES}
-  # ${std_msgs_LIBRARIES}
-  # ${rclcpp_LIBRARIES}
-  # ${Qt5Widgets_LIBRARIES}
-  # ${rqt_gui_cpp_LIBRARIES}
-  # ${qt_gui_cpp_LIBRARIES})
-#
-
-# ament_export_dependencies(ament_cmake)
-# ament_export_dependencies(rqt_gui)
-# ament_export_dependencies(std_msgs)
-# ament_export_dependencies(rclcpp)
-# ament_export_dependencies(Qt5Widgets)
-# ament_export_dependencies(rqt_gui_cpp)
-# ament_export_dependencies(qt_gui_cpp)
-# ament_export_include_directories(${INCLUDE_DIRS})
-# ament_export_libraries(${PROJECT_NAME} ${LIBS})
-
-install(PROGRAMS scripts/rqt_example_cpp
-  DESTINATION lib/${PROJECT_NAME}
+install(FILES plugin.xml
+  DESTINATION share/${PROJECT_NAME}
 )
+
+pluginlib_export_plugin_description_file(rqt_gui "plugin.xml")
+ament_export_include_directories(include)
+ament_export_libraries(${PROJECT_NAME})
+
 ament_package()
